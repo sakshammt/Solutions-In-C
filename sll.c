@@ -108,6 +108,23 @@ struct node* insertbefore(struct node* h, int a, int b)
     return h;
 }
 
+struct node* reverse(struct node* h)
+{
+    struct node *prev = NULL;
+    struct node *curr = h;
+    struct node *next = NULL;
+
+    while(curr != NULL)
+    {
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+
+    return prev;
+}
+
 void print(struct node* h)
 {
     while(h != NULL)
@@ -131,5 +148,11 @@ int main()
 
     head = insertbefore(head,3,9);
 
+
+
+    print(head);
+    printf("\n");
+    head=reverse(head);
     print(head);
 }
+
