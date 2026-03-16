@@ -1,17 +1,19 @@
 #include<stdio.h>
 #include<stdlib.h>
-//doubly linked list
+
 struct node
 {
     int id;
-    struct node* next;
+    struct node *next;
+    struct node *prev;
 };
 
 struct node* createnode(int id)
 {
     struct node* n = malloc(sizeof(struct node));
     n->id = id;
-    n->next = n;      // circular self link
+    n->next = NULL;
+    n->prev = NULL;
     return n;
 }
 
@@ -19,73 +21,41 @@ struct node* insertfirst(struct node* h,int id)
 {
     struct node* n = createnode(id);
 
-    if(h==NULL)
+    if(h == NULL)
         return n;
 
-    struct node* t = h;
-
-    while(t->next != h)
-        t = t->next;
-
     n->next = h;
-    t->next = n;
+    h->prev = n;
 
-    return n;     // new head
+    return n;
 }
 
 struct node* insertlast(struct node* h,int id)
 {
     struct node* n = createnode(id);
 
-    if(h==NULL)
+    if(h == NULL)
         return n;
 
     struct node* t = h;
 
-    while(t->next != h)
+    while(t->next != NULL)
         t = t->next;
 
     t->next = n;
-    n->next = h;
+    n->prev = t;
 
     return h;
 }
 
 struct node* find(struct node* h,int x)
 {
-    if(h==NULL)
-        return NULL;
-
-    struct node* t = h;
-
-    do
+    while(h != NULL)
     {
-        if(t->id == x)
-            return t;
-
-        t = t->next;
+        if(h->id == x)
+            return h;
+        h = h->next;
     }
-    while(t != h);
-
-    return NULL;
-}
-
-struct node* findprev(struct node* h,int x)
-{
-    if(h==NULL || h->id==x)
-        return NULL;
-
-    struct node* t = h;
-
-    do
-    {
-        if(t->next->id == x)
-            return t;
-
-        t = t->next;
-    }
-    while(t != h);
-
     return NULL;
 }
 
@@ -102,43 +72,117 @@ void insertafter(struct node* h,int a,int b)
     struct node* bnode = createnode(b);
 
     bnode->next = anode->next;
+    bnode->prev = anode;
+
+    if(anode->next != NULL)
+        anode->next->prev = bnode;
+
     anode->next = bnode;
 }
 
 struct node* insertbefore(struct node* h,int a,int b)
 {
-    struct node* prev = findprev(h,a);
+    struct node* anode = find(h,a);
 
-    if(prev == NULL)
+    if(anode == NULL)
     {
-        if(h!=NULL && h->id==a)
-            return insertfirst(h,b);
-
         printf("NOT FOUND\n");
         return h;
     }
 
     struct node* bnode = createnode(b);
 
-    bnode->next = prev->next;
-    prev->next = bnode;
+    if(anode->prev == NULL)
+    {
+        bnode->next = anode;
+        anode->prev = bnode;
+        return bnode;
+    }
+
+    bnode->prev = anode->prev;
+    bnode->next = anode;
+
+    anode->prev->next = bnode;
+    anode->prev = bnode;
+
+    return h;
+}
+
+struct node* delfirst(struct node* h)
+{
+    if(h == NULL)
+        return NULL;
+
+    if(h->next == NULL)
+    {
+        free(h);
+        return NULL;
+    }
+
+    struct node* t = h;
+
+    h = h->next;
+    h->prev = NULL;
+
+    free(t);
+
+    return h;
+}
+
+struct node* dellast(struct node* h)
+{
+    if(h == NULL)
+        return NULL;
+
+    if(h->next == NULL)
+    {
+        free(h);
+        return NULL;
+    }
+
+    struct node* t = h;
+
+    while(t->next != NULL)
+        t = t->next;
+
+    t->prev->next = NULL;
+
+    free(t);
+
+    return h;
+}
+
+struct node* delnode(struct node* h,int x)
+{
+    struct node* anode = find(h,x);
+
+    if(anode == NULL)
+    {
+        printf("NOT FOUND\n");
+        return h;
+    }
+
+    if(anode->prev == NULL)
+        return delfirst(h);
+
+    if(anode->next == NULL)
+        return dellast(h);
+
+    anode->prev->next = anode->next;
+    anode->next->prev = anode->prev;
+
+    free(anode);
 
     return h;
 }
 
 void print(struct node* h)
 {
-    if(h==NULL)
-        return;
-
-    struct node* t = h;
-
-    do
+    while(h != NULL)
     {
-        printf("%d ",t->id);
-        t = t->next;
+        printf("%d ",h->id);
+        h = h->next;
     }
-    while(t != h);
 }
 
 int main()
@@ -154,6 +198,12 @@ int main()
     insertafter(head,2,5);
 
     head = insertbefore(head,3,9);
+
+    head = delnode(head,5);
+
+    head = delfirst(head);
+
+    head = dellast(head);
 
     print(head);
 }
