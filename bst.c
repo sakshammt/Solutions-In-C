@@ -99,3 +99,23 @@ struct node*delete(struct node*root, int d)
     }
     return(root);
 }
+void inorder(struct node* root)
+{
+    if(root == NULL)
+        return;
+
+    inorder(root->l);
+    printf("%d ", root->id);
+    inorder(root->r);
+}
+
+int main()
+{
+    struct node*root=NULL;
+    root=addnode(root,1);
+    root=addnode(root,3);
+    root=addnode(root,4);
+    root=addnode(root,-1);
+    root=delete(root,3);
+    inorder(root);
+}
