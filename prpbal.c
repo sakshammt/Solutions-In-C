@@ -16,7 +16,7 @@ int match(char a,char b)
 
 int main()
 {
-    char exp[100];
+       char exp[100];
     int i=0;
 
     printf("Enter expression: ");
